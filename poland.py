@@ -15,13 +15,13 @@ with col1:
     if marksst:
         df=df.loc[marksst]
         df=df.reset_index()
-        df=df.set_index("model")
-        modellist=df.index
-        modellist=list(modellist.unique())
-        modelst=st.multiselect("Select Model",modellist)
-        if modelst:
-            df=df.loc[modelst]
-    df=df.reset_index()
+    df=df.set_index("model")
+    modellist=df.index
+    modellist=list(modellist.unique())
+    modelst=st.multiselect("Select Model",modellist)
+    if modelst:
+        df=df.loc[modelst]
+df=df.reset_index()
 yearsradio=st.radio("Select Option Year",["Specific","All"])
 if yearsradio!="All":
     yearst2=st.number_input("Select Year",min_value=min(df["year"]),max_value=max(df["year"]),value=2021)
@@ -78,17 +78,8 @@ if selectgraph=="Model":
         df=df.value_counts()
         xlast=df.index
         ylast=df.values
-        fig=px.pie(df,values=ylast,names=xlast,title=listcolumnsst,height=700)
+        fig=px.pie(df,values=ylast,names=xlast,title=listcolumnsst,height=800)
         st.plotly_chart(fig,use_container_width=True)
-    #value3 = st.text_input("Enter Column Name", value="mark")
-    #if marksst:
-        #value3="model"
-     #if value3 in df.columns:
-        #value1=df[value3].value_counts()
-        #x=value1.index
-        #y=value1.values
-        #fig=px.pie(value1,values=y,names=x,height=700)
-        #st.plotly_chart(fig,use_container_width=True)
     else:
         st.write("Not Found In Columns")
 if selectgraph=="Mean":
@@ -104,8 +95,3 @@ if selectgraph=="Mean":
         y5=df2["price"]
         fig=px.bar(df2,x=x5,y=y5)
         st.plotly_chart(fig,use_container_width=True)
-
-        #values1list=[]
-        #values1=df["price"].mean()
-        #values1list.append(values1)
-        #st.write(values1list)
