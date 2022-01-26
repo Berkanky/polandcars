@@ -14,14 +14,14 @@ with col1:
     marksst=st.multiselect("Select Car Brands",marks)
     if marksst:
         df=df.loc[marksst]
-        df=df.reset_index()
+    df=df.reset_index()
     df=df.set_index("model")
     modellist=df.index
     modellist=list(modellist.unique())
     modelst=st.multiselect("Select Model",modellist)
     if modelst:
         df=df.loc[modelst]
-df=df.reset_index()
+    df=df.reset_index()
 yearsradio=st.radio("Select Option Year",["Specific","All"])
 if yearsradio!="All":
     yearst2=st.number_input("Select Year",min_value=min(df["year"]),max_value=max(df["year"]),value=2021)
