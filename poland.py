@@ -43,9 +43,9 @@ with col2:
 
 col1,col2=st.columns(2)
 with col1:
-    mileagest = st.slider("Max-Min Mileage", value=[min(df["mileage"]), max(df["mileage"])])
+    mileagest = st.slider("Max-Min Mileage", value=[min(df["mileage"]), max(df["mileage"])],min_value=min(df["mileage"]),max_value=max(df["mileage"]))
     doublest = st.slider("Max-Min Engine", value=[min(df["vol_engine"]),max(df["vol_engine"])])
-    pricest2=st.slider("Max-Min Price",value=[min(df["price"]),max(df["price"])])
+    pricest2=st.slider("Max-Min Price",value=[min(df["price"]),max(df["price"])],min_value=min(df["price"]),max_value=max(df["price"]))
     if pricest2:
         df=df[df["price"]>=pricest2[0]]
         df=df[df["price"]<=pricest2[1]]
@@ -83,15 +83,37 @@ if selectgraph=="Model":
     else:
         st.write("Not Found In Columns")
 if selectgraph=="Mean":
-    df2=pd.read_csv("polandcars.csv")
-    df2=df2.set_index("mark")
-    modelmulti=df2.index
-    modelmulti=list(modelmulti.unique())
-    modelmultist=st.multiselect("Select Mark",modelmulti)
-    if modelmultist:
-        df2=df2.loc[modelmultist]
-        df2=df2.reset_index()
-        x5=df2["model"]
-        y5=df2["price"]
-        fig=px.bar(df2,x=x5,y=y5)
+    newdf=pd.read_csv("polandcars.csv")
+    newdf["price"]=newdf["price"]/4.5
+    newdf=newdf.groupby("mark").describe()
+    newdf = newdf[["vol_engine", "price"]]
+    newdf.columns = ["Vcount", "Vmean", "Vstd", "Vmin", "V25%", "V50%", "V75%", "Vmax", "Pcount", "Pmean", "Pstd",
+                     "Pmin", "P25%", "P50%", "P75%", "Pmax"]
+    newdf = newdf.reset_index()
+    newdf=newdf.set_index("mark")
+    newdfcolumns=list(newdf.columns)
+    defaultix=newdfcolumns.index("Pmean")
+    newdfst=st.selectbox("Select Second Column",newdfcolumns,index=defaultix)
+    if newdfst:
+        newdf=newdf[[newdfst]]
+        newdf[newdfst]=newdf[newdfst].apply(int)
+        newdf=newdf.reset_index()
+        listgraph=["Pie","Bar"]
+        defaultix2=listgraph.index("Pie")
+        listgraphst=st.selectbox("Select Graph",listgraph,index=defaultix2)
+        if listgraphst=="Bar":
+            fig = px.bar(newdf, x="mark", y=newdfst, title=newdfst)
+        if listgraphst=="Pie":
+            fig=px.pie(newdf,values=newdfst,names="mark",title=newdfst,height=700)
         st.plotly_chart(fig,use_container_width=True)
+        @st.cache
+        def convert_df(newdf):
+            return newdf.to_csv().encode('utf-8')
+        csv = convert_df(newdf)
+        st.download_button(
+            label="Download data as CSV",
+            data=csv,
+            file_name='dflast2.csv',
+            mime='text/csv',
+        )
+    #st.dataframe(newdf)
