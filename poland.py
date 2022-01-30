@@ -69,7 +69,7 @@ with col2:
         file_name='dflast.csv',
         mime='text/csv',
     )
-selectgraph=st.radio("Select Option",["Model","Mean"])
+selectgraph=st.radio("Select Option",["Model","Mean"],index=1)
 if selectgraph=="Model":
     listcolumns=list(df.columns)
     listcolumnsst=st.selectbox("Choose Column",listcolumns,index=listcolumns.index("fuel"))
@@ -83,17 +83,24 @@ if selectgraph=="Model":
     else:
         st.write("Not Found In Columns")
 if selectgraph=="Mean":
-    newdf=pd.read_csv("polandcars.csv")
-    newdf["price"]=newdf["price"]/4.5
-    newdf=newdf.groupby("mark").describe()
+    newdf=df
+    #newdf["price"]=newdf["price"]/4.5
+    #newdf=newdf.groupby("mark").describe()
+    listnewdfcolumns = list(newdf.columns)
+    defaultx5 = listnewdfcolumns.index("mark")
+    col1,col2=st.columns(2)
+    with col1:
+        listnewdfcolumnsst = st.selectbox("Select Column", listnewdfcolumns, index=defaultx5)
+    newdf = newdf.groupby(listnewdfcolumnsst).describe()
     newdf = newdf[["vol_engine", "price"]]
     newdf.columns = ["Vcount", "Vmean", "Vstd", "Vmin", "V25%", "V50%", "V75%", "Vmax", "Pcount", "Pmean", "Pstd",
                      "Pmin", "P25%", "P50%", "P75%", "Pmax"]
     newdf = newdf.reset_index()
-    newdf=newdf.set_index("mark")
+    newdf=newdf.set_index(listnewdfcolumnsst)
     newdfcolumns=list(newdf.columns)
     defaultix=newdfcolumns.index("Pmean")
-    newdfst=st.selectbox("Select Second Column",newdfcolumns,index=defaultix)
+    with col2:
+        newdfst=st.selectbox("Select Second Column",newdfcolumns,index=defaultix)
     if newdfst:
         newdf=newdf[[newdfst]]
         newdf[newdfst]=newdf[newdfst].apply(int)
@@ -101,11 +108,6 @@ if selectgraph=="Mean":
         listgraph=["Pie","Bar"]
         defaultix2=listgraph.index("Pie")
         listgraphst=st.selectbox("Select Graph",listgraph,index=defaultix2)
-        if listgraphst=="Bar":
-            fig = px.bar(newdf, x="mark", y=newdfst, title=newdfst)
-        if listgraphst=="Pie":
-            fig=px.pie(newdf,values=newdfst,names="mark",title=newdfst,height=700)
-        st.plotly_chart(fig,use_container_width=True)
         @st.cache
         def convert_df(newdf):
             return newdf.to_csv().encode('utf-8')
@@ -116,4 +118,10 @@ if selectgraph=="Mean":
             file_name='dflast2.csv',
             mime='text/csv',
         )
+        if listgraphst=="Bar":
+            fig = px.bar(newdf, x=listnewdfcolumnsst, y=newdfst, title=newdfst)
+        if listgraphst=="Pie":
+            fig=px.pie(newdf,values=newdfst,names=listnewdfcolumnsst,title=newdfst,height=700)
+        st.plotly_chart(fig,use_container_width=True)
+
     #st.dataframe(newdf)
